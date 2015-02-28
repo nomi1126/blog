@@ -1,7 +1,9 @@
-+++
-date = "2015-02-28T18:58:18+09:00"
-draft = true
-title = "about"
-
-+++
-
+{
+  "title": "About",
+  "description": "A little bit about this site.",
+  "date": "2014-06-18",
+  "url": "about/",
+  "type": "about",
+  "tags": [],
+  "aliases":["profile/"]
+}

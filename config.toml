@@ -1,7 +1,29 @@
-baseurl = "http://nomi1126.github.io/blog/"
+baseurl = "http://nomi1126.github.io"
 languageCode = "ja"
 title = "ryotaniinomi.com"
 MetaDataFormat = "yaml"
+
 [params]
-  description = "nomi"
+    description = "nomi"
     author = "Ryota Niinomi"
+
+[params.inc]
+    title = "ryotaniinomi.com"
+    subtitle = "Art & Tech log"
+    cover_image = "blog-cover.jpg"
+    logo = "logo.gif"
+    # company = "CyberAgent,inc"
+    url = "http://nomi1126.github.io/"
+    github = "nomi1126"
+    twitter = "nomi_ryota"
+    about_link = "http://nomi1126.github.io/about"
+    # product_link = "http://nomi1126.github.io/"
+    # tagline = ""
+
+[params.inc.disqus]
+    shortname =  false
+
+[params.inc.sharing]
+    twitter = true
+    facebook = true
+    gplus = false
