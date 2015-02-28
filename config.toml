@@ -1,3 +1,8 @@
-baseurl = "http://ryotaniinomi.com"
-languageCode = "ja-jp"
+baseurl = "http://nomi1126.github.io/blog/"
+languageCode = "ja"
 title = "ryotaniinomi.com"
+publishdir = "_public"
+MetaDataFormat = "yaml"
+[params]
+  description = "nomi"
+    author = "Ryota Niinomi"
