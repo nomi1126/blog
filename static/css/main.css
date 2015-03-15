@@ -2068,6 +2068,9 @@ a {
   margin: 0 5em; }
   .index > div {
     display: table-cell; }
+    .index > div > p {
+      max-height: 220px;
+      overflow-y: hidden; }
   .index .title {
     margin: 0em 0 0.6em; }
   .index .avatar {
@@ -2331,9 +2334,7 @@ article {
     line-height: 1.5;
     color: #21272d;
     font-weight: 400;
-    margin: 0 0 1.5em;
-    max-height: 220px;
-    overflow-y: hidden; }
+    margin: 0 0 1.5em; }
   article ol, article ul {
     font-weight: 600;
     margin: 1.5em 0;

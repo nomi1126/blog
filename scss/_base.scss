@@ -72,6 +72,11 @@ a {
     
     > div{
         display:table-cell;
+
+        > p {
+            max-height: 220px;
+            overflow-y: hidden;
+        }
     }
     
     .title {
