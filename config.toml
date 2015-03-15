@@ -1,6 +1,6 @@
 baseurl = "http://www.ryotaniinomi.com"
 languageCode = "ja"
-title = "ryotaniinomi.com"
+title = "r21nomi.log"
 MetaDataFormat = "yaml"
 
 [params]
@@ -8,14 +8,14 @@ MetaDataFormat = "yaml"
     author = "Ryota Niinomi"
 
 [params.inc]
-    title = "ryotaniinomi.com"
+    title = "r21nomi.log"
     subtitle = "Art & Tech log"
     cover_image = "blog-cover.jpg"
     logo = "logo.gif"
     # company = "CyberAgent,inc"
     url = "http://www.ryotaniinomi.com"
     github = "nomi1126"
-    twitter = "nomi_ryota"
+    twitter = "r21nomi"
     about_link = "http://www.ryotaniinomi.com/about"
     # product_link = "http://www.ryotaniinomi.com"
     # tagline = ""
