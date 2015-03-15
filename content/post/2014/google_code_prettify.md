@@ -1,7 +1,7 @@
 ---
-date: 2015-03-01T04:52:35+09:00
+date: 2015-03-15T19:22:05+09:00
 draft: true
-title: google-code-prettifyを使ってコードブロックをかっこいいスタイルに整形する
+title: google-code-prettifyでコードブロックをかっこよくする
 ---
 このライブラリ以外にも[SyntaxHighlighter](http://alexgorbatchev.com/SyntaxHighlighter)とか強力なものもあるが、複数のスクリプトを読む必要があったり（結合すればいいんだが）でややめんどくさい。  
 その点、google-code-prettifyは１スクリプトの読み込みだけでOKだし、シンプルなのでこれで十分だと思ってる。  
