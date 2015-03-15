@@ -2331,7 +2331,9 @@ article {
     line-height: 1.5;
     color: #21272d;
     font-weight: 400;
-    margin: 0 0 1.5em; }
+    margin: 0 0 1.5em;
+    max-height: 220px;
+    overflow-y: hidden; }
   article ol, article ul {
     font-weight: 600;
     margin: 1.5em 0;
