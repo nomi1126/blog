@@ -1,12 +1,15 @@
 box: debian
 build:
-    steps:
-        - arjen/hugo-build:
-            version: "0.13"
-            flags: --buildDrafts=true
+  steps:
+    - arjen/hugo-build:
+      version: "0.13"
+      flags: --buildDrafts=true
 deploy:
-    steps:
-        - lukevivier/gh-pages@0.2.1:
-            token: $GIT_TOKEN
-            domain: www.ryotaniinomi.com
-            basedir: public
+  steps:
+    - install-packages:
+      packages: git ssh-client
+
+    - lukevivier/gh-pages@0.2.1:
+      token: $GIT_TOKEN
+      domain: www.ryotaniinomi.com
+      basedir: public
