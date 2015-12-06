@@ -1,8 +1,8 @@
-box: wercker/default
+box: debian
 build:
     steps:
         - arjen/hugo-build:
-            version: 0.13
+            version: "0.13"
             flags: --buildDrafts=true
 deploy:
     steps:
