@@ -17,7 +17,5 @@
     var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(po, s);
   })();
 </script>{{ end }}
-{{ with .Site.Params.inc.analytics.googleid }}
-  {{ partial "_google-analytics.html" . }}
-{{ end }}
+{{ template "_internal/google_analytics.html" . }}
 {{ partial "_piwik-analytics.html" . }}

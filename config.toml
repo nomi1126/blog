@@ -2,6 +2,7 @@ baseurl = "http://www.ryotaniinomi.com"
 languageCode = "ja"
 title = "r21nomi.log"
 MetaDataFormat = "yaml"
+googleAnalytics = "UA-81203103-1"
 
 [params]
     description = "nomi"
