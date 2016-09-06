@@ -33,5 +33,6 @@ void ofApp::draw(){
 
 ![](../../../images/of/attenuation.gif)
 
+[コード](https://github.com/r21nomi/of-basic-study/tree/master/attenuation/src)
 
 参考：https://github.com/ofZach/funkyForms/blob/e79b4728eac983530a16e7ebae33ed2f52fb5e13/sketches/Character/src/ofApp.cpp#L11
