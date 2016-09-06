@@ -6,7 +6,7 @@
             {{ with .Site.Params.inc.product_link }}<a href="{{ . }}">Product</a> &middot; {{ end }}
             {{ with .Site.Params.inc.about_link }}<a href="{{ . }}">About</a>{{ end }}
         </nav>
-        
+
         <nav class="social">
             {{ with .Site.Params.inc.twitter }}
             <a href="https://twitter.com/{{ . }}" title="Follow on Twitter" target="_blank"><i class="icon icon-twitter black"></i></a>
@@ -16,7 +16,7 @@
             {{ end }}
             {{ with .Site.Params.inc.facebook }}
             <a href="http://facebook.com/{{ . }}" title="Follow on Facebook" target="_blank"><i class="icon icon-facebook black"></i></a>
-            {{ end }}    
+            {{ end }}
             <a href="/index.xml" title="RSS Feed">
                 <i class="icon icon-rss black"></i>
             </a>
@@ -24,11 +24,5 @@
     </div>
 </footer>
 {{ partial "_scripts.html" . }}
-
-  <!-- 
-     <p>Incorporated theme by <a href="https://sendtoinc.com">Inc</a></p>
-     <p>Hugo port by @imperialwicket: https://github.com/imperialwicket/hugo-incorporated</p>
-  -->
-
 </body>
 </html>

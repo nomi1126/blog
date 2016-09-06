@@ -19,18 +19,8 @@
 
         <section>
             {{ .Content }}
-            {{ partial "_social.html" . }}
+            <!-- {{ partial "_social.html" . }} -->
         </section>
-
-        <footer>
-            <address>
-               {{ if isset .Params "author.image" }}<img src="/images/{{ .Params.author.image }}">{{ end }}
-                <p>Written by <strong><a rel="author" href="https://twitter.com/{{ .Params.author.twitter }}" title="{{ .Params.author_name }}" target="_blank">{{ .Params.author.name }}</a></strong><br>
-                <span class="muted">{{ .Params.author.bio }}</span>
-                </p>
-            </address>
-
-        </footer>
 
         {{ with .Site.Params.inc.disqus.shortname }}
         <section>
