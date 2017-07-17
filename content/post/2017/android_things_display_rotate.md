@@ -5,8 +5,10 @@ title: Raspberry Piで動かすAndroid Thingsの画面を回転させる
 ---
 Android Thingsで作ったアプリを表示する画面を縦向きにしたかったので調査してみた。  
 
-結論から先に言うと、Android ThingsでRaspberry Piの画面を縦にするのはできない（表示がぐちゃぐちゃになる）。  
-上下逆さまにするのは可能。
+~~結論から先に言うと、Android Things Developer Preview 3.1でRaspberry Piの画面を縦にするのはできない（表示がぐちゃぐちゃになる）。~~  
+~~上下逆さまにするのは可能。~~  
+※追記 2017.07.17  
+[Developer Preview 4.1](https://developer.android.com/things/preview/releases.html#developer_preview_41)では改善されていた。
 
 ## 準備
 1. 任意のディレクトリに`mnt/disk`フォルダを作成
@@ -100,13 +102,15 @@ $ mount -t タイプ デバイス マウント先ディレクトリ
 設定 | 効果
 ------------- | -------------
 display_rotate=0 | 標準
-display_rotate=1 | 時計回りに90°回転する（Android Thingsではうまくいかない）
+display_rotate=1 | 時計回りに90°回転する~~（Android Thingsではうまくいかない）~~※1
 display_rotate=2 | 時計回りに180°回転する
-display_rotate=3 | 時計回りに270°回転する（Android Thingsではうまくいかない）
+display_rotate=3 | 時計回りに270°回転する~~（Android Thingsではうまくいかない）~~※1
 display_rotate=0x10000 | 横方向に裏返す
 display_rotate=0x20000 | 縦方向に裏返す
 
 ※ディスプレイがタッチスクリーンの場合は`lcd_rotate`を使う。
+
+※1 Developer Preview 4.1では改善済み。
 
 ## 参考
 http://stackoverflow.com/questions/41165198/android-things-with-rasp3-7-inch-touchscreen/
