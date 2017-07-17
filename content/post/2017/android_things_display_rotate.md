@@ -82,8 +82,8 @@ finder上の`mnt/disk`の表示がマウント前の状態に戻る。
 
 raspberry piを起動。
 ![](../../../images/2017/android_things_display_rotate/rotate_1.jpg)
-`display_rotate=1`だと画面表示が崩れてしまう。  
-`display_rotate=2`なら正常に上下逆さまになる。
+~~`display_rotate=1`だと画面表示が崩れてしまう。~~※1  
+~~`display_rotate=2`なら正常に上下逆さまになる。~~※1
 
 ### mountについて
 mountとはディスク装置を読み書きできるようにする作業のこと。
