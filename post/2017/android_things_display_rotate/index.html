@@ -1,0 +1,268 @@
+<!doctype html>
+<html>
+<head>
+    <meta http-equiv="content-type" content="text/html; charset=utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>r21nomi.log &mdash; Art &amp; Tech log</title>
+    
+    <link rel="stylesheet" href="http://www.ryotaniinomi.com/css/main.css">
+    <link rel="shortcut icon" href="http://www.ryotaniinomi.com/favicon.ico" type="image/x-icon" />
+    <link rel="apple-touch-icon" href="http://www.ryotaniinomi.com/images/logo.gif"/>
+    <link href="http://www.ryotaniinomi.com/index.xml" rel="alternate" type="application/rss+xml" title="r21nomi.log" />
+    <meta name="title" content="http://www.ryotaniinomi.com">
+    <link rel="canonical" href="http://www.ryotaniinomi.com">
+    <meta property="og:title" content="r21nomi.log"/>
+    <meta property="og:url" content="http://www.ryotaniinomi.com"/>
+    <meta property="og:image" content="http://www.ryotaniinomi.com/images/logo.gif"/>   
+    <meta property="og:site_name" content="r21nomi.log">
+    
+    <link rel="stylesheet" href="https://yandex.st/highlightjs/8.0/styles/monokai.min.css">
+    <script src="https://yandex.st/highlightjs/8.0/highlight.min.js"></script>
+    <script>hljs.initHighlightingOnLoad();</script>
+</head>
+<body>
+    
+<section class="site-nav">
+    <header>
+        <nav id="navigation">
+            <a class="brand" href="/">
+                <img src="http://www.ryotaniinomi.com/images/logo.gif" alt="Inc">
+            </a>
+            <a href="/" class="home">Blog</a>
+            
+            <a href="http://www.ryotaniinomi.com/about">About</a>
+        </nav>
+        <nav class="tagline">
+            
+            
+        </nav>
+    </header>
+</section>
+
+
+
+<article>
+
+    <div class="container">
+        <header>
+            <div class="meta">
+                <time pubdate datetime="2017-04-23" title="2017-04-23">2017-04-23</time>
+            </div>
+            <h1 class="title">Raspberry Piで動かすAndroid Thingsの画面を回転させる</h1>
+            <h2 class="subtitle"></h2>
+        </header>
+
+        <section>
+            
+
+<p>Android Thingsで作ったアプリを表示する画面を縦向きにしたかったので調査してみた。</p>
+
+<p><del>結論から先に言うと、Android Things Developer Preview 3.1でRaspberry Piの画面を縦にするのはできない（表示がぐちゃぐちゃになる）。</del><br />
+<del>上下逆さまにするのは可能。</del><br />
+※追記 2017.07.17<br />
+<a href="https://developer.android.com/things/preview/releases.html#developer_preview_41">Developer Preview 4.1</a>では改善されていた。</p>
+
+<h2 id="準備">準備</h2>
+
+<ol>
+<li>任意のディレクトリに<code>mnt/disk</code>フォルダを作成</li>
+<li>マウントするディスク名を確認
+<code>$ diskutil list</code>で確認。</li>
+</ol>
+
+<pre><code class="language-powershell">$ diskutil list
+/dev/disk0 (internal):
+   #:                       TYPE NAME                    SIZE       IDENTIFIER
+   0:      GUID_partition_scheme                         251.0 GB   disk0
+   1:                        EFI EFI                     314.6 MB   disk0s1
+   2:          Apple_CoreStorage Macintosh HD            250.0 GB   disk0s2
+   3:                 Apple_Boot Recovery HD             650.0 MB   disk0s3
+
+/dev/disk1 (internal, virtual):
+   #:                       TYPE NAME                    SIZE       IDENTIFIER
+   0:                  Apple_HFS Macintosh HD           +249.7 GB   disk1
+                                 Logical Volume on disk0s2
+                                 1B8724D6-D1C3-4B9E-81D2-2044A29AB042
+                                 Unlocked Encrypted
+
+/dev/disk2 (external, physical):
+   #:                       TYPE NAME                    SIZE       IDENTIFIER
+   0:      GUID_partition_scheme                        *8.0 GB     disk2
+   1: 314F99D5-B2BF-4883-8D03-E2F2CE507D6A               67.1 MB    disk2s1
+   2: 314F99D5-B2BF-4883-8D03-E2F2CE507D6A               1.0 MB     disk2s2
+   3: 314F99D5-B2BF-4883-8D03-E2F2CE507D6A               1.0 MB     disk2s3
+   4: BB499290-B57E-49F6-BF41-190386693794               33.6 MB    disk2s4
+   5: BB499290-B57E-49F6-BF41-190386693794               33.6 MB    disk2s5
+   6: 0F2778C4-5CC1-4300-8670-6C88B7E57ED6               536.9 MB   disk2s6
+   7: 0F2778C4-5CC1-4300-8670-6C88B7E57ED6               536.9 MB   disk2s7
+   8: B598858A-5FE3-418E-B8C4-824B41F4ADFC               65.5 KB    disk2s8
+   9: B598858A-5FE3-418E-B8C4-824B41F4ADFC               65.5 KB    disk2s9
+  10: 6B2378B0-0FBC-4AA9-A4F6-4D6E17281C47               1.0 MB     disk2s10
+  11: AA3434B2-DDC3-4065-8B1A-18E99EA15CB7               33.6 MB    disk2s11
+  12: AA3434B2-DDC3-4065-8B1A-18E99EA15CB7               33.6 MB    disk2s12
+  13: 314F99D5-B2BF-4883-8D03-E2F2CE507D6A               268.4 MB   disk2s13
+  14: 314F99D5-B2BF-4883-8D03-E2F2CE507D6A               268.4 MB   disk2s14
+  15: 0BB7E6ED-4424-49C0-9372-7FBAB465AB4C               2.7 GB     disk2s15
+</code></pre>
+
+<p>今回マウントするのは<code>/dev/disk2</code>のディスク</p>
+
+<h2 id="マウント-書き込み-マウント解除">マウント、書き込み、マウント解除</h2>
+
+<p>ここでは、マウント先ディレクトリはホームディレクトリ直下に作った<code>mnt/disk</code>とする。</p>
+
+<pre><code class="language-powershell"># マウント①
+$ sudo mount -t msdos /dev/disk2s1 ./mnt/disk
+# 書き込み②
+$ echo 'display_rotate=1' &gt;&gt; ./mnt/disk/config.txt
+# マウント解除③
+$ sudo umount ./mnt/disk
+</code></pre>
+
+<p>マウント前
+<img src="../../../images/2017/android_things_display_rotate/1.png" alt="" /></p>
+
+<p>①マウント後
+書き込みできるようになるまで（このアイコンに変わるまで）ほんの少し時間がかかるので、finderでフォルダアイコンが変わるのを確認してから次の書き込みコマンドを実行すると良い。
+<img src="../../../images/2017/android_things_display_rotate/2.png" alt="" /></p>
+
+<p>②書き込み後
+<code>display_rotate=1</code>がある。<br />
+<code>display_rotate=1</code>は時計回りに90°回転の意味。
+<img src="../../../images/2017/android_things_display_rotate/3.png" alt="" /></p>
+
+<p>③マウント解除
+finder上の<code>mnt/disk</code>の表示がマウント前の状態に戻る。
+この状態であればmicrosdの取り出しが可能。</p>
+
+<p>raspberry piを起動。
+<img src="../../../images/2017/android_things_display_rotate/rotate_1.jpg" alt="" />
+<del><code>display_rotate=1</code>だと画面表示が崩れてしまう。</del>※1<br />
+<del><code>display_rotate=2</code>なら正常に上下逆さまになる。</del>※1</p>
+
+<h3 id="mountについて">mountについて</h3>
+
+<p>mountとはディスク装置を読み書きできるようにする作業のこと。</p>
+
+<p>usbメモリなどをPCに接続すると画像のようなアイコンがでるが、これがマウントされている状態。<br />
+通常のディスクは接続するだけで自動でマウントされることがほとんどだが、読み込み不可になっているディスクを強制的に読み込む場合などに<code>mount</code>コマンドを用いればマウント状態にすることができる。
+<img src="../../../images/2017/android_things_display_rotate/4.png" alt="" /></p>
+
+<pre><code class="language-powershell">$ mount -t タイプ デバイス マウント先ディレクトリ
+</code></pre>
+
+<p>参考：<a href="http://eng-entrance.com/linux-command-mount">http://eng-entrance.com/linux-command-mount</a></p>
+
+<h2 id="display-rotateの値による効果">display_rotateの値による効果</h2>
+
+<table>
+<thead>
+<tr>
+<th>設定</th>
+<th>効果</th>
+</tr>
+</thead>
+
+<tbody>
+<tr>
+<td>display_rotate=0</td>
+<td>標準</td>
+</tr>
+
+<tr>
+<td>display_rotate=1</td>
+<td>時計回りに90°回転する<del>（Android Thingsではうまくいかない）</del>※1</td>
+</tr>
+
+<tr>
+<td>display_rotate=2</td>
+<td>時計回りに180°回転する</td>
+</tr>
+
+<tr>
+<td>display_rotate=3</td>
+<td>時計回りに270°回転する<del>（Android Thingsではうまくいかない）</del>※1</td>
+</tr>
+
+<tr>
+<td>display_rotate=0x10000</td>
+<td>横方向に裏返す</td>
+</tr>
+
+<tr>
+<td>display_rotate=0x20000</td>
+<td>縦方向に裏返す</td>
+</tr>
+</tbody>
+</table>
+
+<p>※ディスプレイがタッチスクリーンの場合は<code>lcd_rotate</code>を使う。</p>
+
+<p>※1 Developer Preview 4.1では改善済み。</p>
+
+<h2 id="参考">参考</h2>
+
+<p><a href="http://stackoverflow.com/questions/41165198/android-things-with-rasp3-7-inch-touchscreen/">http://stackoverflow.com/questions/41165198/android-things-with-rasp3-7-inch-touchscreen/</a>
+<a href="http://stackoverflow.com/questionunt](http://eng-entrance.com/linux-command-mount">http://stackoverflow.com/questionunt](http://eng-entrance.com/linux-command-mount</a>)</p>
+
+            
+        </section>
+
+        
+    </div>
+</article>
+
+<footer class="site-footer">
+    <div class="container">
+        <nav>
+            <a href="http://www.ryotaniinomi.com"></a> &middot;
+            <a href="/">Blog</a> &middot;
+            
+            <a href="http://www.ryotaniinomi.com/about">About</a>
+        </nav>
+
+        <nav class="social">
+            
+            <a href="https://twitter.com/r21nomi" title="Follow on Twitter" target="_blank"><i class="icon icon-twitter black"></i></a>
+            
+            
+            <a href="https://github.com/r21nomi" title="Follow on Github" target="_blank"><i class="icon icon-github black"></i></a>
+            
+            
+            <a href="/index.xml" title="RSS Feed">
+                <i class="icon icon-rss black"></i>
+            </a>
+        </nav>
+    </div>
+</footer>
+<script type="text/javascript" src="//ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js"></script>
+<script type="text/javascript" src="http://www.ryotaniinomi.com/js/main.js"></script>
+
+<script>!function(d,s,id){var js,fjs=d.getElementsByTagName(s)[0],p=/^http:/.test(d.location)?'http':'https';if(!d.getElementById(id)){js=d.createElement(s);js.id=id;js.src=p+'://platform.twitter.com/widgets.js';fjs.parentNode.insertBefore(js,fjs);}}(document, 'script', 'twitter-wjs');</script>
+<div id="fb-root"></div>
+<script>(function(d, s, id) {
+  var js, fjs = d.getElementsByTagName(s)[0];
+  if (d.getElementById(id)) return;
+  js = d.createElement(s); js.id = id;
+  js.src = "//connect.facebook.net/en_US/all.js#xfbml=1&appId=253595308025739";
+  fjs.parentNode.insertBefore(js, fjs);
+}(document, 'script', 'facebook-jssdk'));</script>
+
+
+<script>
+(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+})(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+ga('create', 'UA-81203103-1', 'auto');
+ga('send', 'pageview');
+</script>
+
+
+
+
+
+</body>
+</html>
+

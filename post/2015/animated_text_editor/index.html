@@ -1,0 +1,282 @@
+<!doctype html>
+<html>
+<head>
+    <meta http-equiv="content-type" content="text/html; charset=utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>r21nomi.log &mdash; Art &amp; Tech log</title>
+    
+    <link rel="stylesheet" href="http://www.ryotaniinomi.com/css/main.css">
+    <link rel="shortcut icon" href="http://www.ryotaniinomi.com/favicon.ico" type="image/x-icon" />
+    <link rel="apple-touch-icon" href="http://www.ryotaniinomi.com/images/logo.gif"/>
+    <link href="http://www.ryotaniinomi.com/index.xml" rel="alternate" type="application/rss+xml" title="r21nomi.log" />
+    <meta name="title" content="http://www.ryotaniinomi.com">
+    <link rel="canonical" href="http://www.ryotaniinomi.com">
+    <meta property="og:title" content="r21nomi.log"/>
+    <meta property="og:url" content="http://www.ryotaniinomi.com"/>
+    <meta property="og:image" content="http://www.ryotaniinomi.com/images/logo.gif"/>   
+    <meta property="og:site_name" content="r21nomi.log">
+    
+    <link rel="stylesheet" href="https://yandex.st/highlightjs/8.0/styles/monokai.min.css">
+    <script src="https://yandex.st/highlightjs/8.0/highlight.min.js"></script>
+    <script>hljs.initHighlightingOnLoad();</script>
+</head>
+<body>
+    
+<section class="site-nav">
+    <header>
+        <nav id="navigation">
+            <a class="brand" href="/">
+                <img src="http://www.ryotaniinomi.com/images/logo.gif" alt="Inc">
+            </a>
+            <a href="/" class="home">Blog</a>
+            
+            <a href="http://www.ryotaniinomi.com/about">About</a>
+        </nav>
+        <nav class="tagline">
+            
+            
+        </nav>
+    </header>
+</section>
+
+
+
+<article>
+
+    <div class="container">
+        <header>
+            <div class="meta">
+                <time pubdate datetime="2015-07-11" title="2015-07-11">2015-07-11</time>
+            </div>
+            <h1 class="title">【Processing】Generative Art風TextEditor</h1>
+            <h2 class="subtitle"></h2>
+        </header>
+
+        <section>
+            
+
+<p><img src="../../../images/processing/image_animated_text.png" alt="" />
+アニメーションする文字を生成するTextEditorぽいもの（TextEditorなんて大層なものじゃない）をつくった。</p>
+
+<h2 id="解説">解説</h2>
+
+<p>ポイントは<code>PGraphics</code>を使う点だろう。<br />
+<code>PGraphics</code>とは別画面のようなもの。<br />
+テキストやグラフィックを描画することができるのだが、その結果は画面上には反映されない。<br />
+裏側で仮の描画を行ったり、描画を保存しておいたりする際に使うそう。<br />
+今回はこの<code>PGraphics</code>を用いてTextEditorをつくる。</p>
+
+<h4 id="pgraphicsの生成サンプル">PGraphicsの生成サンプル</h4>
+
+<pre><code>PGraphics pg;
+void setup() {
+    size(400, 400);
+    background(0);
+    rectMode(CENTER);
+
+    pg = createGraphics(width, height, JAVA2D);
+    pg.beginDraw();
+    pg.textSize(12);
+    pg.textAlign(CENTER, CENTER);
+    pg.fill(255);
+    pg.text(&quot;Hello&quot;, pg.width/2, pg.height/2);
+    pg.endDraw();
+
+    // 描画
+    image(pg, 0, 0);
+}
+</code></pre>
+
+<p>これで以下のように描画される。<br />
+シンプルである。<br />
+<img src="../../../images/processing/image_pgraphics_sample.png" alt="" /></p>
+
+<p>以下に実際のコードを抜粋していく。</p>
+
+<h3 id="初期パーティクルの生成">初期パーティクルの生成</h3>
+
+<pre><code>// 画面の分割数
+// この値が大きいと点の間隔が狭くなり、細かいパーティクルができる
+int gridX = 100;
+int gridY = 130;
+
+void initParticles() {
+    particles = new ArrayList();
+
+    // 点同士の間隔
+    float w = float(width) / gridX;
+    float h = float(height) / gridY;
+
+    for (int y = 0; y &lt; gridY; y++) {
+        for (int x = 0; x &lt; gridX; x++) {
+            // 描画する点の位置
+            float vx = w * x;
+            float vy = h * y;
+
+            // 点の位置がテキスト内に入ってればパーティクルを生成しリストに保存
+            if (isInsideText((int)vx, (int)vy)) {
+                Particle particle = new Particle(new PVector(vx, vy));
+                particle.display();
+                particles.add(particle);
+            }
+        }
+    }
+}
+</code></pre>
+
+<h3 id="ある点がpgraphicsに描画したグラフィック上に位置するかの判定">ある点がPGraphicsに描画したグラフィック上に位置するかの判定</h3>
+
+<pre><code>boolean isInsideText(int x, int y) {
+    // 座標から取得した点の色が描画色のものと一致するかどうかで判定
+    return (pg.get(x, y) == PGRAPHICS_COLOR);
+}
+</code></pre>
+
+<p><code>PGraphics#get</code>でその座標の色を取得できるので、それを使う。<br />
+ちなみに、ここで使っている<code>PGRAPHICS_COLOR</code>は、<code>PGraphics#fill</code>で設定する色である。</p>
+
+<h3 id="描画">描画</h3>
+
+<pre><code>void draw() {
+    background(BACKGROUND_COLOR);
+
+    for (int i = 0, len = particles.size(); i &lt; len; i++) {
+        Particle baseParticle = particles.get(i);
+        PVector baseLocation = baseParticle.getLocation();
+
+        // 点が文字の外に出たら方向を変える
+        // TODO：現状はx方向にはみ出たかy方向にはみ出たかの判定ができてないので修正したい
+        if (!isInsideText((int)baseLocation.x, (int)baseLocation.y)) {
+            baseParticle.updateDir(-1, -1);
+        }
+        baseParticle.update();
+        baseParticle.display();
+
+        // 点同士を線で結ぶ
+        for (int k = i+1; k &lt; particles.size(); k++) {
+            Particle targetParticle = particles.get(k);
+            PVector targetLocation = targetParticle.getLocation();
+            // 次の点との距離を計算
+            float dist = baseLocation.dist(targetLocation);
+
+            // 処理が閾値以下であれば描画
+            if (dist != 0 &amp;&amp; dist &lt; 10) {
+                stroke(255, 100);
+                strokeWeight(1);
+                line(baseLocation.x, baseLocation.y, targetLocation.x, targetLocation.y);
+            }
+        }
+    }
+}
+</code></pre>
+
+<h3 id="点の描画を行うparticleクラス">点の描画を行うParticleクラス</h3>
+
+<pre><code>class Particle {
+    PVector location;
+    float radius;
+    float dirX;
+    float dirY;
+
+    Particle(PVector location) {
+        this.location = location;
+        radius = 4;
+        dirX = random(-1, 1);
+        dirY = random(-1, 1);
+    }
+
+    PVector getLocation() {
+        return location;
+    }
+
+    // 位置を更新
+    void update() {
+        PVector velocity = new PVector(dirX, dirY);
+        location.add(velocity);
+    }
+
+    // 方向を変える（跳ね返り）
+    void updateDir(int x, int y) {
+        dirX *= x;
+        dirY *= y;
+    }
+
+    void display() {
+        fill(255, 100);
+        noStroke();
+        ellipse(location.x, location.y, radius, radius);
+    }
+}
+</code></pre>
+
+<p>点の数だけこれをインスタンス化して使う。</p>
+
+<p>できたものはこれ。</p>
+
+<iframe width="420" height="315" src="https://www.youtube.com/embed/-6pOM5faOIY" frameborder="0" allowfullscreen></iframe>
+
+<p>以上です。</p>
+
+<p><a href="https://github.com/nomi1126/processing_work/tree/master/2015_07_05_animationText/animationText">コード</a></p>
+
+            
+        </section>
+
+        
+    </div>
+</article>
+
+<footer class="site-footer">
+    <div class="container">
+        <nav>
+            <a href="http://www.ryotaniinomi.com"></a> &middot;
+            <a href="/">Blog</a> &middot;
+            
+            <a href="http://www.ryotaniinomi.com/about">About</a>
+        </nav>
+
+        <nav class="social">
+            
+            <a href="https://twitter.com/r21nomi" title="Follow on Twitter" target="_blank"><i class="icon icon-twitter black"></i></a>
+            
+            
+            <a href="https://github.com/r21nomi" title="Follow on Github" target="_blank"><i class="icon icon-github black"></i></a>
+            
+            
+            <a href="/index.xml" title="RSS Feed">
+                <i class="icon icon-rss black"></i>
+            </a>
+        </nav>
+    </div>
+</footer>
+<script type="text/javascript" src="//ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js"></script>
+<script type="text/javascript" src="http://www.ryotaniinomi.com/js/main.js"></script>
+
+<script>!function(d,s,id){var js,fjs=d.getElementsByTagName(s)[0],p=/^http:/.test(d.location)?'http':'https';if(!d.getElementById(id)){js=d.createElement(s);js.id=id;js.src=p+'://platform.twitter.com/widgets.js';fjs.parentNode.insertBefore(js,fjs);}}(document, 'script', 'twitter-wjs');</script>
+<div id="fb-root"></div>
+<script>(function(d, s, id) {
+  var js, fjs = d.getElementsByTagName(s)[0];
+  if (d.getElementById(id)) return;
+  js = d.createElement(s); js.id = id;
+  js.src = "//connect.facebook.net/en_US/all.js#xfbml=1&appId=253595308025739";
+  fjs.parentNode.insertBefore(js, fjs);
+}(document, 'script', 'facebook-jssdk'));</script>
+
+
+<script>
+(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+})(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+ga('create', 'UA-81203103-1', 'auto');
+ga('send', 'pageview');
+</script>
+
+
+
+
+
+</body>
+</html>
+

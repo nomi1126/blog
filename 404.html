@@ -1,0 +1,267 @@
+<!doctype html>
+<html>
+<head>
+    <meta http-equiv="content-type" content="text/html; charset=utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>r21nomi.log &mdash; Art &amp; Tech log</title>
+    
+    <link rel="stylesheet" href="http://www.ryotaniinomi.com/css/main.css">
+    <link rel="shortcut icon" href="http://www.ryotaniinomi.com/favicon.ico" type="image/x-icon" />
+    <link rel="apple-touch-icon" href="http://www.ryotaniinomi.com/images/logo.gif"/>
+    <link href="http://www.ryotaniinomi.com/index.xml" rel="alternate" type="application/rss+xml" title="r21nomi.log" />
+    <meta name="title" content="http://www.ryotaniinomi.com">
+    <link rel="canonical" href="http://www.ryotaniinomi.com">
+    <meta property="og:title" content="r21nomi.log"/>
+    <meta property="og:url" content="http://www.ryotaniinomi.com"/>
+    <meta property="og:image" content="http://www.ryotaniinomi.com/images/logo.gif"/>   
+    <meta property="og:site_name" content="r21nomi.log">
+    
+    <link rel="stylesheet" href="https://yandex.st/highlightjs/8.0/styles/monokai.min.css">
+    <script src="https://yandex.st/highlightjs/8.0/highlight.min.js"></script>
+    <script>hljs.initHighlightingOnLoad();</script>
+</head>
+<body>
+    
+<section class="site-nav">
+    <header>
+        <nav id="navigation">
+            <a class="brand" href="/">
+                <img src="http://www.ryotaniinomi.com/images/logo.gif" alt="Inc">
+            </a>
+            <a href="/" class="home">Blog</a>
+            
+            <a href="http://www.ryotaniinomi.com/about">About</a>
+        </nav>
+        <nav class="tagline">
+            
+            
+        </nav>
+    </header>
+</section>
+
+
+<article class="container">
+  <header><h1>404</h1></header>
+  <section>
+    <p>That doesn't seem to exist! Recent articles are below or search the <a href="/post/">archives</a>.</p>
+  </section>
+  <hr>
+  
+        <section class="index">
+        
+        <div>
+            <h2 class="title"><a href="/post/2017/glsl-live-coder/" rel="prefetch">glsl-livecoderを正常に使えるようにするまで</a></h2>
+            
+            
+            <p>glsl-livecoderはglslでライブコーディングを行うためのAtomパッケージである。 正常に動作できるようになるまでにやや手こずったのでメモしておく。 実行環境は、macOS 10.12.5。 glsl-livecoderのインストール $ apm install glsl-livecoder だが、Atomの設定でglslangValidatorのパスを指定しないと正常に動かない。 自分はglslangValidatorをインストールしてなかったので、次のステップで方法を紹介。 なかなかめんどくさい。 glslangValidatorのインストール 基本的にリポジトリに記載されているビルドステップ通りにやれば良いわけだが、わかりづらい。 なので、以下に自分がやったステップを紹介する。 1. KhronosGroup/glslangリポジトリをクローン 2. CMakeのインストール CMakeはクロスプラットフォームのビルドツール。 自分は、ダウンロードページからcmake-3.9.0-Darwin-x86_64.dmgをインストールした。 3. CMakeをコマンドラインから使えるよう設定 $ sudo &quot;/Applications/CMake.app/Contents/bin/cmake-gui&quot; --install これで$ cmakeが使えるようになる。 この設定コマンドは、CMake.appのTools/How to Install For Command Line Useに記載されている。 4. glslangリポジトリのビルドステップに沿って実行 1) Check-Out this project すでにクローンしてるのでスキップ。 2) Check-Out External Projects 必要なステップだったか正直わからないが、一応1)で作ったディレクトリ内にクローンしておいた。 3) Configure Mac上での作業だったが、wnidow向けとして書かれていたステップで実行。 glslangをクローンしたディレクトリ上で下記コマンドを実行。 $ cmake ./ -DCMAKE_INSTALL_PREFIX=`pwd`/install 4) Build and Install こちらもfor Windowsと書かれている方で実行。 $ cmake --build . --config {Release|Debug|MinSizeRel|RelWithDebInfo} \ --target install ただ、ドキュメントに記載されてた上記コマンドだと諸々のコマンドが見つからない旨のエラーが出た。 -bash: Debug: command not found -bash: MinSizeRel: command not found -bash: RelWithDebInfo}: command not found make[2]: *** [hlsl/CMakeFiles/HLSL.dir/depend] Error 141 make[1]: *** [hlsl/CMakeFiles/HLSL.dir/all] Error 2 make: *** [all] Error 2 なので、congif指定を外して実行。 $ cmake --build .</p>
+            
+            <div class="meta">
+                <time pubdate datetime="2017-07-29" title="2017-07-29">2017-07-29</time>
+            </div>
+        </div>
+        <hr>
+    </section>
+
+  
+        <section class="index">
+        
+        <div>
+            <h2 class="title"><a href="/post/2017/circle_ci_google_services_json/" rel="prefetch">git管理下から除外したgoogle-services.jsonをCircle CIから読み込む</a></h2>
+            
+            
+            <p>TL;DR jsonファイルをbase64化してテキストにする それをCircle CIの環境変数に設定 circle.ymlでjsonファイルにデコードする命令を書く 概要 google-services.jsonはFirebaseなどのgoogleサービスと連携するために必要なファイルだが、これはプライベートな情報であるためGithub等のpublicリポジトリの管理下に置くべきではない。 だが、単純にファイルを除外するだけだとCIサービスからファイルを参照できなくなり、ビルドに失敗する。 Circle CIではドキュメントに方法が記載されているが、Firebaseの場合、単純にこの通りではうまくいかないので、本記事ではファイルを除外し、Circle CIで正常にビルドできるようにするまでをメモしておく。 手順 google-services.jsonの除外 .gitignoreにgoogle-services.jsonを追加すればok。 google-services.jsonをbase64化 ターミナルから以下コマンドを実行。 $ openssl base64 -in &lt;SOURCE_FILE_NAME&gt; -out &lt;OUT_FILE_NAME&gt; Circle CIの環境変数に登録 Circle CIプロジェクト設定のEnvironment Variablesに追加する。 例えば、こんな感じ。 GOOGLE_SERVICES_JSON xxxxxxxxx... circle.ymlの設定 設定した環境変数のテキストをjsonファイルにデコードする処理を書く。 dependencies: pre: ... - echo $GOOGLE_SERVICES_JSON | base64 --decode --ignore-garbage &gt; ${HOME}/${CIRCLE_PROJECT_REPONAME}/app/google-services.json CircleCIのドキュメントでは${HOME}/gcloud-service-key.jsonとなっているが、これだとno such file or directory的なエラーが出るので、プロジェクト名とモジュール名（Firebaseで利用する際にはこの直下にjsonファイルを置くことになるので）も指定する必要がある。 appまで指定しないとデコード処理は通るが、アプリのビルド処理でファイルが見つからずコケることになる。 ちなみに、${HOME}は/home/ubuntu、${CIRCLE_PROJECT_REPONAME}はプロジェクト名が返る。 これで正常にビルドできるようになった。</p>
+            
+            <div class="meta">
+                <time pubdate datetime="2017-05-27" title="2017-05-27">2017-05-27</time>
+            </div>
+        </div>
+        <hr>
+    </section>
+
+  
+        <section class="index">
+        
+        <div>
+            <h2 class="title"><a href="/post/2017/android_things_display_rotate/" rel="prefetch">Raspberry Piで動かすAndroid Thingsの画面を回転させる</a></h2>
+            
+            
+            <p>Android Thingsで作ったアプリを表示する画面を縦向きにしたかったので調査してみた。 結論から先に言うと、Android Things Developer Preview 3.1でRaspberry Piの画面を縦にするのはできない（表示がぐちゃぐちゃになる）。 上下逆さまにするのは可能。 ※追記 2017.07.17 Developer Preview 4.1では改善されていた。 準備 任意のディレクトリにmnt/diskフォルダを作成 マウントするディスク名を確認 $ diskutil listで確認。 $ diskutil list /dev/disk0 (internal): #: TYPE NAME SIZE IDENTIFIER 0: GUID_partition_scheme 251.0 GB disk0 1: EFI EFI 314.6 MB disk0s1 2: Apple_CoreStorage Macintosh HD 250.0 GB disk0s2 3: Apple_Boot Recovery HD 650.0 MB disk0s3 /dev/disk1 (internal, virtual): #: TYPE NAME SIZE IDENTIFIER 0: Apple_HFS Macintosh HD +249.7 GB disk1</p>
+            
+            <div class="meta">
+                <time pubdate datetime="2017-04-23" title="2017-04-23">2017-04-23</time>
+            </div>
+        </div>
+        <hr>
+    </section>
+
+  
+        <section class="index">
+        
+        <div>
+            <h2 class="title"><a href="/post/2016/adventcalendar_creative_coding/" rel="prefetch">1日1スケッチのススメ</a></h2>
+            
+            
+            <p>この記事はクリエイティブコーディング Advent Calendar 2016 20日目の投稿である。 TL;DR 1日1個スケッチをする 1テーマに決めてやる 30分でやる 1日1スケッチ 毎日30分、決めたテーマに沿ってスケッチをする。 自分の場合はopenFrameworksを使うのだが、processingでもjavascriptでも何でも良いと思う。 30分1テーマってところがポイントで、毎日継続することに意味がある。 この活動のインスパイア元は「30 min. Processing」というブログ。 目的 動きの学習のため アプリ, web, インスタレーション問わず目に見える部分に凝りたいと思っているので、動きの学習をすることはカッコよく気持ち良いモノをつくるのに重要だ。 また、自分は普段はアプリをつくる仕事をしているのだが、クリエイティブコーディングのアルゴリズムは他のプラットフォーム（アプリ、web）のインタラクション実装にも活かせると思う。 この辺りは別の機会にまとめたい。 楽しい カッコイイもの、気持ち良いものをつくるのは単純に楽しい。 やり方 やり方ってほどでもないが、自分がいつもやっていることを書く。 1テーマを決めてやる テーマを決めてやることでその実装のみに集中できる。 例えば、BlobやPattern, Transformといった感じ。 また、テーマを決めることで一つ一つの実装量がシンプルになるので、実装方法を忘れた時に検索しやすくなるのも良いポイントである。 30分でやる 短時間に制限することで継続できるようにする。 30分という時間は正直短いが、前につくったスケッチを元にブラッシュアップしていくと30分でもそれなりに大きな作品にできる。 継続することが大事なのだ。 Githubにまとめておく コードベースでスケッチを保存する場として、Github等のリポジトリにまとめておくと良い。 視覚的にスケッチを見れるよう、最初はトップのREADMEにGIF画像を貼っていったが次第に重くなっていったので、視覚的なスケッチの保存は別の箇所で行うことにした。 また、同じテーマでブラッシュアップしていく場合でも各スケッチごとにプロジェクトをつくっておくとそれそれの違いがわかって良い。 GIFを一覧できるページにあげる ブログなど視覚的に成果を見れるページにあげておく。 後から視覚的に見て実装を確認できるのと、溜まっていく感が楽しいからだ。 自分の場合はTumblrに上げていっている。 GIF画像とそのコードへのリンクを貼っておけばあとで参照できる。 シェアする これはおまけなのだが、モチベーションを維持する意味でつくったスケッチはSNSにシェアするようにしてる。 因みに、oFの父Zach氏も定期的にTwitterにスケッチをポストしている。 porcupine font pic.twitter.com/ftQtytlWyQ &mdash; zach lieberman (@zachlieberman) 2016年12月19日 アイデアはissueにまとめておく いざスケッチをしようと思っても何やろうかなかなか思いつかないこともあるので、実装してみたいアイデアを issueとかにストックしておくと良いと思う。 まとめ 一連の流れは以下の通り。 テーマのディレクトリを作成 テーマディレクトリ配下にoFのprojectGeneratorでprojectを作成 以前のスケッチをブラッシュアップする場合は、ファイルをコピペ。Xcodeにもadd filesでファイル追加。 30分でスケッチ GIF画像で記録（自分はLICEcap使ってる） Githubのリポジトリにpush TumblrにGIFをポスト SNSでシェア</p>
+            
+            <div class="meta">
+                <time pubdate datetime="2016-12-20" title="2016-12-20">2016-12-20</time>
+            </div>
+        </div>
+        <hr>
+    </section>
+
+  
+        <section class="index">
+        
+        <div>
+            <h2 class="title"><a href="/post/2016/attenuation/" rel="prefetch">減衰のインタラクションアルゴリズム</a></h2>
+            
+            
+            <p>マウスの移動量に応じて値が大きくなり、徐々に値が0に戻っていく減衰のアルゴリズムを紹介する。 コードはopenFrameworks。 ofApp.h class ofApp : public ofBaseApp{ public: float velocity = 0; float smooth = 0.9; ofVec2f pMouse; }; ofApp.cpp void ofApp::update(){ ofVec2f m(mouseX, mouseY); ofVec2f dir = m - pMouse; velocity = smooth * velocity + smooth * dir.x; pMouse.set(mouseX, mouseY); } void ofApp::draw(){ ofDrawRectangle(mouseX - velocity, 0, 30 - velocity, ofGetHeight()); } コード 参考：https://github.com/ofZach/funkyForms/blob/e79b4728eac983530a16e7ebae33ed2f52fb5e13/sketches/Character/src/ofApp.cpp#L11</p>
+            
+            <div class="meta">
+                <time pubdate datetime="2016-09-07" title="2016-09-07">2016-09-07</time>
+            </div>
+        </div>
+        <hr>
+    </section>
+
+  
+        <section class="index">
+        
+        <div>
+            <h2 class="title"><a href="/post/2016/of_android/" rel="prefetch">oFからAndroidのメソッドを呼ぶ</a></h2>
+            
+            
+            <p>oFからAndroidのメソッドを呼ぶにはofxAndroidUtils内のいつくかのメソッドを使う必要がある。 例えば、プロジェクトフォルダがsampleProjectの場合、ofApp.cppからcc.openframeworks.sampleProject.OFActivity#getIdメソッドを呼ぶ処理を以下に書く。 OFActivity.java public class OFActivity extends cc.openframeworks.OFActivity{ ... // ofApp.cppからこのメソッドを呼びたい public int getId() { return 10; } } ofApp.h #include &quot;ofxAndroidUtils.h&quot; ... ofApp.cpp void ofApp::setup(){ // setup()は一度しか呼ばれないっぽい（バックボタンで戻った後に再度立ち上げても呼ばれない） ofLog(OF_LOG_NOTICE, &quot;ID : &quot; + ofToString(getId())); // 10 } // 2回目の起動以降はreloadTextures()が呼ばれるので、ここにも設定しておく必要がある // resume()も２回目以降の起動で呼ばれるが、ここでofImage.load()とかすると画像が正しく設定されないので、reloadTextures()で処理するのが良い void ofApp::reloadTextures(){ ofLog(OF_LOG_NOTICE, &quot;ID : &quot; + ofToString(getId())); // 10 } // OFActivity#getIdを呼んで返り値のintを取得するメソッド int ofApp::getId() { // Get env. JNIEnv *env = ofGetJNIEnv(); if (!env) { ofLogError() &lt;&lt; &quot;Couldn't get environment using GetEnv().&quot; &lt;&lt; endl; return -1; } // Find reference for OFActivity.</p>
+            
+            <div class="meta">
+                <time pubdate datetime="2016-07-21" title="2016-07-21">2016-07-21</time>
+            </div>
+        </div>
+        <hr>
+    </section>
+
+  
+        <section class="index">
+        
+        <div>
+            <h2 class="title"><a href="/post/2016/tinyshield_micrsd/" rel="prefetch">MICROSD TINYSHIELDを使ってTinyScreenにGIFを表示する</a></h2>
+            
+            
+            <p>TinyScreenというとても小さなArduino互換のディスプレイがあるのだが、今回はこれにGIF画像を表示する方法をメモしておく。 TinyScreenとは 冒頭でも述べたが、親指サイズの非常に小さなArduino互換デバイスである。 詳しくは、公式サイトをみると良い。 MICROSD TINYSHIELDを使ってGIFを表示する GIFの表示には、TinyScreen本体に加えてMICROSD TINYSHIELDと いうモジュールが必要になる。 こちらは、文字通りMicroSD内のファイルを読み込めるようにするモジュールで、今回はこの中に保存されているGIFを表示する方法を紹介する。 紹介といっても、すでにコードと解説はこちらに載っているので、重複する部分も多々あるがもう少し細かく説明しておこうと思う。 Gif -&gt; TSVファイルへの変換 TSVとはデータとデータの間がタブで区切られているテキストファイル。 表示するGIF画像はこのTSV形式に変換しておかないとプログラムで表示できないので、ここではその変換を行う。 準備 こちらからTSVconverter.pyファイルをDLする。 GIFファイルをTSVconverter.pyファイルと同階層においておく。 変換 TSVconverter.pyファイルをpythonコマンドで実行すればTSVファイルが生成される。 $ python TSVconverter.py エラーが出た時の対応 初めてpython TSVconverter.pyを実行する場合、おそらくこんなエラーが出る。 Traceback (most recent call last): File &quot;TSVconverter.py&quot;, line 2, in &lt;module&gt; from PIL import Image ImportError: No module named PIL PILがインストールされてないらしい。 PIL（pillow）のインストール まずは、pipをインストール。 $ curl -kL https://bootstrap.pypa.io/get-pip.py | python ※Permission denied: '/Library/Python/2.7/site-packages/pip'エラーが出るかもなのでsudoつける必要あるかも $ curl -kL https://bootstrap.pypa.io/get-pip.py | sudo python 実行 $ ./gradlew lint &amp;&amp; android-resource-remover --xml app/build/outputs/lint-results.xml 次に、PILのforkプロジェクトであるpillowをインストール $ pip install pillow パーミッションエラーが出たらsudoで実行。 正常にインストールされてることを確認 $ pip list ...</p>
+            
+            <div class="meta">
+                <time pubdate datetime="2016-05-03" title="2016-05-03">2016-05-03</time>
+            </div>
+        </div>
+        <hr>
+    </section>
+
+  
+        <section class="index">
+        
+        <div>
+            <h2 class="title"><a href="/post/2015/animated_text_editor/" rel="prefetch">【Processing】Generative Art風TextEditor</a></h2>
+            
+            
+            <p>アニメーションする文字を生成するTextEditorぽいもの（TextEditorなんて大層なものじゃない）をつくった。 解説 ポイントはPGraphicsを使う点だろう。 PGraphicsとは別画面のようなもの。 テキストやグラフィックを描画することができるのだが、その結果は画面上には反映されない。 裏側で仮の描画を行ったり、描画を保存しておいたりする際に使うそう。 今回はこのPGraphicsを用いてTextEditorをつくる。 PGraphicsの生成サンプル PGraphics pg; void setup() { size(400, 400); background(0); rectMode(CENTER); pg = createGraphics(width, height, JAVA2D); pg.beginDraw(); pg.textSize(12); pg.textAlign(CENTER, CENTER); pg.fill(255); pg.text(&quot;Hello&quot;, pg.width/2, pg.height/2); pg.endDraw(); // 描画 image(pg, 0, 0); } これで以下のように描画される。 シンプルである。 以下に実際のコードを抜粋していく。 初期パーティクルの生成 // 画面の分割数 // この値が大きいと点の間隔が狭くなり、細かいパーティクルができる int gridX = 100; int gridY = 130; void initParticles() { particles = new ArrayList(); // 点同士の間隔 float w = float(width) / gridX; float h</p>
+            
+            <div class="meta">
+                <time pubdate datetime="2015-07-11" title="2015-07-11">2015-07-11</time>
+            </div>
+        </div>
+        <hr>
+    </section>
+
+  
+        <section class="index">
+        
+        <div>
+            <h2 class="title"><a href="/post/2015/eye/" rel="prefetch">【Processing】眼球を描く</a></h2>
+            
+            
+            <p>こちらの記事を参考に眼球を描いてみた。 眼球はマウスカーソルに追従するようになってる。 ざっくり解説 球体の描き方は↑に丁寧にまとめられてるのでそちらを参照すると良い。 球体はpoint()で円上に配置した点をZ軸の上に半径を変えて重ねている。 ボールを輪切りにしたようなイメージかも。 目ん玉の部分は塗りを有効にするためにbeginShape()とendShape()を用いており、vertex()によって点を描画している。 眼球描画部分のコードを以下に載せておく。 EyeBall.pde class EyeBall { float radius = 200; float dir = 1; float val = 0; float lastX; float lastY; float lastZ; EyeBall() {} void display() { val += 5; for(int s = 0; s &lt;= 180; s += 10){ float radianS = s == 0 ? radians(3) : radians(s); float expansion = map(sin(radians(val)), -1, 1, 1, 1.5); float z = radius</p>
+            
+            <div class="meta">
+                <time pubdate datetime="2015-06-22" title="2015-06-22">2015-06-22</time>
+            </div>
+        </div>
+        <hr>
+    </section>
+
+  
+        <section class="index">
+        
+        <div>
+            <h2 class="title"><a href="/post/2015/spider/" rel="prefetch">【Processing】蜘蛛の巣っぽいビジュアルを描く</a></h2>
+            
+            
+            <p>流れは以下 多角形の頂点を作成 多角形になるように頂点を結ぶ線分を作成 外側から内側の多角形へ頂点を結ぶ線分を作成 各頂点座標にランダム値をプラスすることで微弱な揺れを表現してる spider.pde ArrayList&lt;ArrayList&lt;Particle&gt;&gt; particleGeneration; // 各点の位置用 ArrayList&lt;ArrayList&lt;Connection&gt;&gt; connectionGeneration; // 各点を繋ぐ線用 ArrayList&lt;ArrayList&lt;Connection&gt;&gt; boneGeneration; // 外から内に向かう線用 int count = 12; int radius; int distance = 360 / count; void setup() { size(displayWidth, displayHeight); radius = displayHeight / 2; particleGeneration = new ArrayList(); connectionGeneration = new ArrayList(); boneGeneration = new ArrayList(); for (int k = 0; radius &gt; 0; k++) { ArrayList&lt;Particle&gt; particles = new ArrayList(); ArrayList&lt;Connection&gt; connections =</p>
+            
+            <div class="meta">
+                <time pubdate datetime="2015-06-20" title="2015-06-20">2015-06-20</time>
+            </div>
+        </div>
+        <hr>
+    </section>
+
+  
+</article>
+<section class="pagination" style="text-align:center">
+  <a href="/post/" class="btn btn-outline">Archives</a>
+</section>
+<footer class="site-footer">
+    <div class="container">
+        <nav>
+            <a href="http://www.ryotaniinomi.com"></a> &middot;
+            <a href="/">Blog</a> &middot;
+            
+            <a href="http://www.ryotaniinomi.com/about">About</a>
+        </nav>
+
+        <nav class="social">
+            
+            <a href="https://twitter.com/r21nomi" title="Follow on Twitter" target="_blank"><i class="icon icon-twitter black"></i></a>
+            
+            
+            <a href="https://github.com/r21nomi" title="Follow on Github" target="_blank"><i class="icon icon-github black"></i></a>
+            
+            
+            <a href="/index.xml" title="RSS Feed">
+                <i class="icon icon-rss black"></i>
+            </a>
+        </nav>
+    </div>
+</footer>
+<script type="text/javascript" src="//ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js"></script>
+<script type="text/javascript" src="http://www.ryotaniinomi.com/js/main.js"></script>
+
+<script>!function(d,s,id){var js,fjs=d.getElementsByTagName(s)[0],p=/^http:/.test(d.location)?'http':'https';if(!d.getElementById(id)){js=d.createElement(s);js.id=id;js.src=p+'://platform.twitter.com/widgets.js';fjs.parentNode.insertBefore(js,fjs);}}(document, 'script', 'twitter-wjs');</script>
+<div id="fb-root"></div>
+<script>(function(d, s, id) {
+  var js, fjs = d.getElementsByTagName(s)[0];
+  if (d.getElementById(id)) return;
+  js = d.createElement(s); js.id = id;
+  js.src = "//connect.facebook.net/en_US/all.js#xfbml=1&appId=253595308025739";
+  fjs.parentNode.insertBefore(js, fjs);
+}(document, 'script', 'facebook-jssdk'));</script>
+
+
+<script>
+(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+})(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+ga('create', 'UA-81203103-1', 'auto');
+ga('send', 'pageview');
+</script>
+
+
+
+
+
+</body>
+</html>
+

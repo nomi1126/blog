@@ -1,0 +1,202 @@
+<!doctype html>
+<html>
+<head>
+    <meta http-equiv="content-type" content="text/html; charset=utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>r21nomi.log &mdash; Art &amp; Tech log</title>
+    
+    <link rel="stylesheet" href="http://www.ryotaniinomi.com/css/main.css">
+    <link rel="shortcut icon" href="http://www.ryotaniinomi.com/favicon.ico" type="image/x-icon" />
+    <link rel="apple-touch-icon" href="http://www.ryotaniinomi.com/images/logo.gif"/>
+    <link href="http://www.ryotaniinomi.com/index.xml" rel="alternate" type="application/rss+xml" title="r21nomi.log" />
+    <meta name="title" content="http://www.ryotaniinomi.com">
+    <link rel="canonical" href="http://www.ryotaniinomi.com">
+    <meta property="og:title" content="r21nomi.log"/>
+    <meta property="og:url" content="http://www.ryotaniinomi.com"/>
+    <meta property="og:image" content="http://www.ryotaniinomi.com/images/logo.gif"/>   
+    <meta property="og:site_name" content="r21nomi.log">
+    
+    <link rel="stylesheet" href="https://yandex.st/highlightjs/8.0/styles/monokai.min.css">
+    <script src="https://yandex.st/highlightjs/8.0/highlight.min.js"></script>
+    <script>hljs.initHighlightingOnLoad();</script>
+</head>
+<body>
+    
+<section class="site-nav">
+    <header>
+        <nav id="navigation">
+            <a class="brand" href="/">
+                <img src="http://www.ryotaniinomi.com/images/logo.gif" alt="Inc">
+            </a>
+            <a href="/" class="home">Blog</a>
+            
+            <a href="http://www.ryotaniinomi.com/about">About</a>
+        </nav>
+        <nav class="tagline">
+            
+            
+        </nav>
+    </header>
+</section>
+
+
+
+<article>
+
+    <div class="container">
+        <header>
+            <div class="meta">
+                <time pubdate datetime="2016-07-21" title="2016-07-21">2016-07-21</time>
+            </div>
+            <h1 class="title">oFからAndroidのメソッドを呼ぶ</h1>
+            <h2 class="subtitle"></h2>
+        </header>
+
+        <section>
+            <p>oFからAndroidのメソッドを呼ぶには<code>ofxAndroidUtils</code>内のいつくかのメソッドを使う必要がある。</p>
+
+<p>例えば、プロジェクトフォルダが<code>sampleProject</code>の場合、<code>ofApp.cpp</code>から<code>cc.openframeworks.sampleProject.OFActivity#getId</code>メソッドを呼ぶ処理を以下に書く。</p>
+
+<p><code>OFActivity.java</code></p>
+
+<pre><code class="language-java">public class OFActivity extends cc.openframeworks.OFActivity{
+	...
+	// ofApp.cppからこのメソッドを呼びたい
+    public int getId() {
+        return 10;
+    }
+}
+</code></pre>
+
+<p><code>ofApp.h</code></p>
+
+<pre><code class="language-cpp">#include &quot;ofxAndroidUtils.h&quot;
+...
+</code></pre>
+
+<p><code>ofApp.cpp</code></p>
+
+<pre><code class="language-cpp">void ofApp::setup(){
+	// setup()は一度しか呼ばれないっぽい（バックボタンで戻った後に再度立ち上げても呼ばれない）
+	ofLog(OF_LOG_NOTICE, &quot;ID : &quot; + ofToString(getId()));  // 10
+}
+
+// 2回目の起動以降はreloadTextures()が呼ばれるので、ここにも設定しておく必要がある
+// resume()も２回目以降の起動で呼ばれるが、ここでofImage.load()とかすると画像が正しく設定されないので、reloadTextures()で処理するのが良い
+void ofApp::reloadTextures(){
+	ofLog(OF_LOG_NOTICE, &quot;ID : &quot; + ofToString(getId()));  // 10
+}
+
+// OFActivity#getIdを呼んで返り値のintを取得するメソッド
+int ofApp::getId() {
+    // Get env.
+    JNIEnv *env = ofGetJNIEnv();
+    if (!env) {
+        ofLogError() &lt;&lt; &quot;Couldn't get environment using GetEnv().&quot; &lt;&lt; endl;
+        return -1;
+    }
+
+    // Find reference for OFActivity.
+    jclass localClass = env-&gt;FindClass(&quot;cc/openframeworks/sampleProject/OFActivity&quot;);
+    jclass javaClass = (jclass) env-&gt;NewGlobalRef(localClass);
+    if(!javaClass){
+        ofLogError() &lt;&lt; &quot;Couldn't get java class for OFActivity.&quot; &lt;&lt; endl;
+        return -1;
+    }
+    jobject javaObject = ofGetOFActivityObject();
+    javaObject = (jobject) env-&gt;NewGlobalRef(javaObject);
+    if (!javaObject) {
+        ofLogError() &lt;&lt; &quot;javaObject not found.&quot; &lt;&lt; endl;
+        return -1;
+    }
+
+    // Find getId method from OFActivity.
+    jmethodID javaGetIdMethod = env-&gt;GetMethodID(javaClass,&quot;getId&quot;,&quot;()I&quot;);
+    if(!javaGetIdMethod){
+        ofLogError() &lt;&lt; &quot;Couldn't get java getId from OFActivity.&quot; &lt;&lt; endl;
+        return -1;
+    }
+
+    return env-&gt;CallIntMethod(javaObject, javaGetIdMethod);
+}
+</code></pre>
+
+<p>参考：<a href="https://github.com/cpietsch/cordova-plugin-opcvExample/blob/c15d91225caff536ea9425908f61f2b9a2dc2892/of_v0.9.0_android_release/addons/ofxAndroidWebView/src/ofxAndroidWebView.cpp">https://github.com/cpietsch/cordova-plugin-opcvExample/blob/c15d91225caff536ea9425908f61f2b9a2dc2892/of_v0.9.0_android_release/addons/ofxAndroidWebView/src/ofxAndroidWebView.cpp</a></p>
+
+<p><a href="http://stackoverflow.com/questions/30815284/whats-method-signature-parameter-when-calling-a-java-method-using-jni">methodsignatureの種類について</a></p>
+
+<pre><code>Type Signature   Java Type
+Z                boolean
+B                byte
+C                char
+S                short
+I                int
+J                long
+F                float
+D                double
+L fully-qualified-class ;   fully-qualified-class
+[ type           type[]
+( arg-types ) ret-type method type
+</code></pre>
+
+            
+        </section>
+
+        
+    </div>
+</article>
+
+<footer class="site-footer">
+    <div class="container">
+        <nav>
+            <a href="http://www.ryotaniinomi.com"></a> &middot;
+            <a href="/">Blog</a> &middot;
+            
+            <a href="http://www.ryotaniinomi.com/about">About</a>
+        </nav>
+
+        <nav class="social">
+            
+            <a href="https://twitter.com/r21nomi" title="Follow on Twitter" target="_blank"><i class="icon icon-twitter black"></i></a>
+            
+            
+            <a href="https://github.com/r21nomi" title="Follow on Github" target="_blank"><i class="icon icon-github black"></i></a>
+            
+            
+            <a href="/index.xml" title="RSS Feed">
+                <i class="icon icon-rss black"></i>
+            </a>
+        </nav>
+    </div>
+</footer>
+<script type="text/javascript" src="//ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js"></script>
+<script type="text/javascript" src="http://www.ryotaniinomi.com/js/main.js"></script>
+
+<script>!function(d,s,id){var js,fjs=d.getElementsByTagName(s)[0],p=/^http:/.test(d.location)?'http':'https';if(!d.getElementById(id)){js=d.createElement(s);js.id=id;js.src=p+'://platform.twitter.com/widgets.js';fjs.parentNode.insertBefore(js,fjs);}}(document, 'script', 'twitter-wjs');</script>
+<div id="fb-root"></div>
+<script>(function(d, s, id) {
+  var js, fjs = d.getElementsByTagName(s)[0];
+  if (d.getElementById(id)) return;
+  js = d.createElement(s); js.id = id;
+  js.src = "//connect.facebook.net/en_US/all.js#xfbml=1&appId=253595308025739";
+  fjs.parentNode.insertBefore(js, fjs);
+}(document, 'script', 'facebook-jssdk'));</script>
+
+
+<script>
+(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+})(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+ga('create', 'UA-81203103-1', 'auto');
+ga('send', 'pageview');
+</script>
+
+
+
+
+
+</body>
+</html>
+

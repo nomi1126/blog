@@ -1,0 +1,173 @@
+<!doctype html>
+<html>
+<head>
+    <meta http-equiv="content-type" content="text/html; charset=utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>r21nomi.log &mdash; Art &amp; Tech log</title>
+    
+    <link rel="stylesheet" href="http://www.ryotaniinomi.com/css/main.css">
+    <link rel="shortcut icon" href="http://www.ryotaniinomi.com/favicon.ico" type="image/x-icon" />
+    <link rel="apple-touch-icon" href="http://www.ryotaniinomi.com/images/logo.gif"/>
+    <link href="http://www.ryotaniinomi.com/index.xml" rel="alternate" type="application/rss+xml" title="r21nomi.log" />
+    <meta name="title" content="http://www.ryotaniinomi.com">
+    <link rel="canonical" href="http://www.ryotaniinomi.com">
+    <meta property="og:title" content="r21nomi.log"/>
+    <meta property="og:url" content="http://www.ryotaniinomi.com"/>
+    <meta property="og:image" content="http://www.ryotaniinomi.com/images/logo.gif"/>   
+    <meta property="og:site_name" content="r21nomi.log">
+    
+    <link rel="stylesheet" href="https://yandex.st/highlightjs/8.0/styles/monokai.min.css">
+    <script src="https://yandex.st/highlightjs/8.0/highlight.min.js"></script>
+    <script>hljs.initHighlightingOnLoad();</script>
+</head>
+<body>
+    
+<section class="site-nav">
+    <header>
+        <nav id="navigation">
+            <a class="brand" href="/">
+                <img src="http://www.ryotaniinomi.com/images/logo.gif" alt="Inc">
+            </a>
+            <a href="/" class="home">Blog</a>
+            
+            <a href="http://www.ryotaniinomi.com/about">About</a>
+        </nav>
+        <nav class="tagline">
+            
+            
+        </nav>
+    </header>
+</section>
+
+
+
+<article>
+
+    <div class="container">
+        <header>
+            <div class="meta">
+                <time pubdate datetime="2017-05-27" title="2017-05-27">2017-05-27</time>
+            </div>
+            <h1 class="title">git管理下から除外したgoogle-services.jsonをCircle CIから読み込む</h1>
+            <h2 class="subtitle"></h2>
+        </header>
+
+        <section>
+            
+
+<h2 id="tl-dr">TL;DR</h2>
+
+<ul>
+<li>jsonファイルをbase64化してテキストにする</li>
+<li>それをCircle CIの環境変数に設定</li>
+<li><code>circle.yml</code>でjsonファイルにデコードする命令を書く</li>
+</ul>
+
+<h2 id="概要">概要</h2>
+
+<p><code>google-services.json</code>はFirebaseなどのgoogleサービスと連携するために必要なファイルだが、これはプライベートな情報であるためGithub等のpublicリポジトリの管理下に置くべきではない。</p>
+
+<p>だが、単純にファイルを除外するだけだとCIサービスからファイルを参照できなくなり、ビルドに失敗する。</p>
+
+<p>Circle CIでは<a href="https://circleci.com/docs/1.0/google-auth/">ドキュメントに方法が記載されている</a>が、Firebaseの場合、単純にこの通りではうまくいかないので、本記事ではファイルを除外し、Circle CIで正常にビルドできるようにするまでをメモしておく。</p>
+
+<h2 id="手順">手順</h2>
+
+<h3 id="google-services-jsonの除外">google-services.jsonの除外</h3>
+
+<p><code>.gitignore</code>に<code>google-services.json</code>を追加すればok。</p>
+
+<h3 id="google-services-jsonをbase64化">google-services.jsonをbase64化</h3>
+
+<p>ターミナルから以下コマンドを実行。</p>
+
+<pre><code>$ openssl base64 -in &lt;SOURCE_FILE_NAME&gt; -out &lt;OUT_FILE_NAME&gt;
+</code></pre>
+
+<h3 id="circle-ciの環境変数に登録">Circle CIの環境変数に登録</h3>
+
+<p>Circle CIプロジェクト設定の<code>Environment Variables</code>に追加する。</p>
+
+<p>例えば、こんな感じ。</p>
+
+<p><code>GOOGLE_SERVICES_JSON</code> <code>xxxxxxxxx...</code></p>
+
+<h3 id="circle-ymlの設定">circle.ymlの設定</h3>
+
+<p>設定した環境変数のテキストをjsonファイルにデコードする処理を書く。</p>
+
+<pre><code>dependencies:
+  pre:
+    ...
+    - echo $GOOGLE_SERVICES_JSON | base64 --decode --ignore-garbage &gt; ${HOME}/${CIRCLE_PROJECT_REPONAME}/app/google-services.json
+</code></pre>
+
+<p><a href="https://circleci.com/docs/1.0/google-auth/">CircleCIのドキュメント</a>では<code>${HOME}/gcloud-service-key.json</code>となっているが、これだと<code>no such file or directory</code>的なエラーが出るので、プロジェクト名とモジュール名（Firebaseで利用する際にはこの直下にjsonファイルを置くことになるので）も指定する必要がある。</p>
+
+<p><code>app</code>まで指定しないとデコード処理は通るが、アプリのビルド処理でファイルが見つからずコケることになる。</p>
+
+<p>ちなみに、<code>${HOME}</code>は<code>/home/ubuntu</code>、<code>${CIRCLE_PROJECT_REPONAME}</code>はプロジェクト名が返る。</p>
+
+<p>これで正常にビルドできるようになった。</p>
+
+            
+        </section>
+
+        
+    </div>
+</article>
+
+<footer class="site-footer">
+    <div class="container">
+        <nav>
+            <a href="http://www.ryotaniinomi.com"></a> &middot;
+            <a href="/">Blog</a> &middot;
+            
+            <a href="http://www.ryotaniinomi.com/about">About</a>
+        </nav>
+
+        <nav class="social">
+            
+            <a href="https://twitter.com/r21nomi" title="Follow on Twitter" target="_blank"><i class="icon icon-twitter black"></i></a>
+            
+            
+            <a href="https://github.com/r21nomi" title="Follow on Github" target="_blank"><i class="icon icon-github black"></i></a>
+            
+            
+            <a href="/index.xml" title="RSS Feed">
+                <i class="icon icon-rss black"></i>
+            </a>
+        </nav>
+    </div>
+</footer>
+<script type="text/javascript" src="//ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js"></script>
+<script type="text/javascript" src="http://www.ryotaniinomi.com/js/main.js"></script>
+
+<script>!function(d,s,id){var js,fjs=d.getElementsByTagName(s)[0],p=/^http:/.test(d.location)?'http':'https';if(!d.getElementById(id)){js=d.createElement(s);js.id=id;js.src=p+'://platform.twitter.com/widgets.js';fjs.parentNode.insertBefore(js,fjs);}}(document, 'script', 'twitter-wjs');</script>
+<div id="fb-root"></div>
+<script>(function(d, s, id) {
+  var js, fjs = d.getElementsByTagName(s)[0];
+  if (d.getElementById(id)) return;
+  js = d.createElement(s); js.id = id;
+  js.src = "//connect.facebook.net/en_US/all.js#xfbml=1&appId=253595308025739";
+  fjs.parentNode.insertBefore(js, fjs);
+}(document, 'script', 'facebook-jssdk'));</script>
+
+
+<script>
+(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+})(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+ga('create', 'UA-81203103-1', 'auto');
+ga('send', 'pageview');
+</script>
+
+
+
+
+
+</body>
+</html>
+
