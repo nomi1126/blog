@@ -7,12 +7,14 @@ title: glsl-livecoderを正常に使えるようにするまで
 [glsl-livecoder](https://github.com/fand/glsl-livecoder)はglslでライブコーディングを行うためのAtomパッケージである。  
 正常に動作できるようになるまでにやや手こずったのでメモしておく。
 
+実行環境は、`macOS 10.12.5`。
+
 # glsl-livecoderのインストール
 ```
 $ apm install glsl-livecoder
 ```
 だが、Atomの設定で`glslangValidator`のパスを指定しないと正常に動かない。  
-自分は`glslangValidator`をインストールしてなかったので、次のステップで方法を紹介。
+自分は`glslangValidator`をインストールしてなかったので、次のステップで方法を紹介。  
 なかなかめんどくさい。
 
 # glslangValidatorのインストール
@@ -41,7 +43,7 @@ $ sudo "/Applications/CMake.app/Contents/bin/cmake-gui" --install
 
 [3) Configure](https://github.com/KhronosGroup/glslang#3-configure)  
 Mac上での作業だったが、wnidow向けとして書かれていたステップで実行。  
-glslangをクローンしたディレクトリ場で下記コマンドを実行。
+glslangをクローンしたディレクトリ上で下記コマンドを実行。
 
 ```
 $ cmake ./ -DCMAKE_INSTALL_PREFIX=`pwd`/install
